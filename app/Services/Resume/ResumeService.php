@@ -4,7 +4,10 @@ namespace App\Services\Resume;
 
 use App\Models\Resume;
 use App\Repositories\Contracts\ResumeRepositoryInterface;
+use App\Services\Pdf\PdfParserServiceInterface;
+use App\Exceptions\PdfParsingException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
@@ -12,10 +15,12 @@ use Illuminate\Http\UploadedFile;
 class ResumeService implements ResumeServiceInterface
 {
     private ResumeRepositoryInterface $repository;
+    private PdfParserServiceInterface $pdfParser;
 
-    public function __construct(ResumeRepositoryInterface $repository)
+    public function __construct(ResumeRepositoryInterface $repository, PdfParserServiceInterface $pdfParser)
     {
         $this->repository = $repository;
+        $this->pdfParser = $pdfParser;
     }
 
     public function upload(array $data): Resume
@@ -40,6 +45,21 @@ class ResumeService implements ResumeServiceInterface
             'version' => $data['version'] ?? 1,
             'uploaded_at' => now(),
         ]);
+
+        $parsedText = null;
+
+        try {
+            $parsedText = $this->pdfParser->parse($storagePath);
+        } catch (PdfParsingException $exception) {
+            Log::warning('Resume PDF parsing failed', [
+                'storage_path' => $storagePath,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        if ($parsedText !== null) {
+            $resume = $this->repository->update($resume, ['parsed_text' => $parsedText]);
+        }
 
         return $resume;
     }

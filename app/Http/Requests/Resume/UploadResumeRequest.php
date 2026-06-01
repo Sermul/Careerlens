@@ -18,11 +18,4 @@ class UploadResumeRequest extends FormRequest
             'title' => ['sometimes', 'string', 'max:255'],
         ];
     }
-
-    public function prepareForValidation(): void
-    {
-        if ($this->user()) {
-            $this->merge(['user_id' => $this->user()->id]);
-        }
-    }
 }

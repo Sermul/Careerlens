@@ -3,33 +3,56 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\JobDescription\StoreJobDescriptionRequest;
+use App\Http\Requests\JobDescription\UpdateJobDescriptionRequest;
+use App\Http\Resources\Api\V1\JobDescriptionResource;
+use App\Services\JobDescription\JobDescriptionServiceInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class JobDescriptionController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    private JobDescriptionServiceInterface $service;
+
+    public function __construct(JobDescriptionServiceInterface $service)
     {
-        throw new \BadMethodCallException('Not implemented');
+        $this->service = $service;
     }
 
-    public function store(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        throw new \BadMethodCallException('Not implemented');
+        $perPage = (int) $request->query('per_page', 15);
+        $jobDescriptions = $this->service->list($request->user()->id, $perPage);
+
+        return response()->json(JobDescriptionResource::collection($jobDescriptions));
+    }
+
+    public function store(StoreJobDescriptionRequest $request): JsonResponse
+    {
+        $payload = array_merge($request->validated(), ['user_id' => $request->user()->id]);
+        $jobDescription = $this->service->create($payload);
+
+        return response()->json(new JobDescriptionResource($jobDescription), 201);
     }
 
     public function show(string $id, Request $request): JsonResponse
     {
-        throw new \BadMethodCallException('Not implemented');
+        $jobDescription = $this->service->get($id, $request->user()->id);
+
+        return response()->json(new JobDescriptionResource($jobDescription));
     }
 
-    public function update(string $id, Request $request): JsonResponse
+    public function update(string $id, UpdateJobDescriptionRequest $request): JsonResponse
     {
-        throw new \BadMethodCallException('Not implemented');
+        $jobDescription = $this->service->update($id, $request->validated(), $request->user()->id);
+
+        return response()->json(new JobDescriptionResource($jobDescription));
     }
 
     public function destroy(string $id, Request $request): JsonResponse
     {
-        throw new \BadMethodCallException('Not implemented');
+        $this->service->delete($id, $request->user()->id);
+
+        return response()->json(null, 204);
     }
 }

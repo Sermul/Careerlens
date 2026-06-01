@@ -29,6 +29,7 @@ class ResumeController extends Controller
     public function store(UploadResumeRequest $request): JsonResponse
     {
         $payload = $request->validated();
+        $payload['user_id'] = $request->user()->id;
         $resume = $this->resumeService->upload($payload);
 
         return response()->json(new ResumeResource($resume), 201);

@@ -13,6 +13,14 @@ class ResumeRepository implements ResumeRepositoryInterface
         return Resume::create($data);
     }
 
+    public function update(Resume $resume, array $data): Resume
+    {
+        $resume->fill($data);
+        $resume->save();
+
+        return $resume;
+    }
+
     public function findById(string $id): ?Resume
     {
         return Resume::find($id);

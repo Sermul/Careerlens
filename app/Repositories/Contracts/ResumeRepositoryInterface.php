@@ -9,6 +9,8 @@ interface ResumeRepositoryInterface
 {
     public function create(array $data): Resume;
 
+    public function update(Resume $resume, array $data): Resume;
+
     public function findById(string $id): ?Resume;
 
     public function listByUser(string $userId, int $perPage = 15): LengthAwarePaginator;

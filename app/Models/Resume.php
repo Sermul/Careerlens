@@ -21,6 +21,7 @@ class Resume extends Model
         'storage_path',
         'size_bytes',
         'metadata',
+        'parsed_text',
         'version',
         'uploaded_at',
     ];

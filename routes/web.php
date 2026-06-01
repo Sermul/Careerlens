@@ -6,7 +6,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Load API routes (keeps simple apps working without a RouteServiceProvider)
-if (file_exists(__DIR__.'/api.php')) {
-    require __DIR__.'/api.php';
-}
+// Provide stub web auth routes so unauthenticated redirects can resolve named route helpers.
+Route::get('/login', function () {
+    return redirect('/');
+})->name('login');
+
+Route::get('/register', function () {
+    return redirect('/');
+})->name('register');
+
